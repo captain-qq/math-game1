@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>玩转数字卡片小游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f4f2e8 0%, #e2e0d5 100%);
+            font-family: 'Comic Sans MS', 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 1.343-2 2 .895 2 2 2z' fill='%23e8894a' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .lab-container {
+            max-width: 1100px;
+            width: 100%;
+            background: #fffcf5;
+            border-radius: 56px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,245,210,0.9);
+            padding: 20px 24px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 卡通装饰元素 */
+        .decor {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        .decor-star { top: 20px; right: 30px; color: #ffd700; }
+        .decor-heart { bottom: 20px; left: 30px; color: #e74c3c; }
+        .decor-flower { top: 50%; right: 20px; transform: translateY(-50%); color: #2ecc71; }
+        .decor-star-sm { font-size: 1.2rem; color: #ffd700; }
+        .decor-heart-sm { font-size: 1.2rem; color: #e74c3c; }
+        .decor-flower-sm { font-size: 1.2rem; color: #2ecc71; }
+
+        /* 封面优化 */
+        .cover {
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(145deg, #fff9e8, #fff5e0);
+            border-radius: 40px;
+            margin: 10px;
+            border: 5px solid #f0bc6e;
+        }
+        .cover::before {
+            content: "🎈";
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 2rem;
+        }
+        .cover::after {
+            content: "🎈";
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+        }
+        .cover-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b81, #ff4757);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .cover-subtitle {
+            font-size: 1.5rem;
+            color: #a5663a;
+            margin-bottom: 40px;
+            font-weight: 500;
+            font-family: 'Comic Sans MS', cursive;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .cover-subtitle::before, .cover-subtitle::after {
+            content: "✨";
+            font-size: 1.5rem;
+        }
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .level-btn {
+            background: linear-gradient(135deg, #ff9ff3, #f368e0);
+            border: 4px solid #fff;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 16px 36px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .level-btn:nth-child(1) {
+            background: linear-gradient(135deg, #ff9f43, #ff6b6b);
+        }
+        .level-btn:nth-child(2) {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+        }
+        .level-btn:nth-child(3) {
+            background: linear-gradient(135deg, #1dd1a1, #10ac84);
+        }
+        .level-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.2);
+        }
+        .level-btn::after {
+            content: "✨";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1rem;
+        }
+        .back-btn {
+            background: #b97f49;
+            margin: 10px 0;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background: #a86f39;
+        }
+        .next-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            margin: 10px 0;
+            padding: 8px 20px;
+            font-size: 1rem;
+            border-radius: 30px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight:bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .drag-card {
+            width: 90px;
+            height: 100px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: 0.1s linear;
+            font-weight: bold;
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .drag-card::after {
+            content: "❤️";
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .drag-card:active { cursor: grabbing; }
+        .card-black-border {
+            background: #ffffff;
+            border: 3px solid #333333 !important;
+            color: #222;
+        }
+        .card-number { font-size: 2.7rem; font-weight: 800; line-height: 1; }
+
+        .area-wrap {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8efdf;
+            border-radius: 24px;
+            position: relative;
+        }
+        .area-wrap::before {
+            content: "⭐";
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2rem;
+        }
+        .area-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #553c20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .area-title::before {
+            content: "🌸";
+            font-size: 1.2rem;
+        }
+        .card-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .slot {
+            width: 95px;
+            height: 105px;
+            background: #fef7ea;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px dashed #999;
+            transition: 0.2s;
+        }
+        .slot:hover {
+            background: #fdf0e0;
+        }
+        .record-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 40px;
+            padding: 10px 0;
+        }
+        .record-item {
+            background: #2f4858;
+            color: #ffdd99;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+        .record-item:hover {
+            transform: scale(1.05);
+            background: #39586d;
+        }
+        .tip-text {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .tip-text::before, .tip-text::after {
+            content: "💖";
+            font-size: 1.2rem;
+        }
+        .btn-group {
+            text-align: center;
+            margin: 15px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #dd874a, #c9773a);
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            margin: 0 8px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        button:active { transform: translateY(1px); }
+        button:hover {
+            background: linear-gradient(135deg, #e89050, #d17f40);
+        }
+
+        .secret-area {
+            margin: 15px 0;
+            padding: 18px;
+            background: #fff3cd;
+            border-radius: 24px;
+            border: 2px dashed #d6b873;
+            position: relative;
+        }
+        .secret-area::after {
+            content: "🌟";
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 1.5rem;
+        }
+        .secret-text {
+            font-size: 1.3rem;
+            line-height: 1.7;
+            color: #6b4f24;
+            font-weight: 500;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        /* 第二关棋盘样式 - 内容居中 */
+        .chessboard-container {
+            background: #f8efdf;
+            border-radius: 24px;
+            padding: 20px;
+            margin: 15px 0;
+            position: relative;
+        }
+        .chessboard-container .area-title {
+            margin-bottom: 20px;
+        }
+        .chessboard-grid {
+            display: grid;
+            grid-template-columns: auto 90px 90px 90px;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .chessboard-label {
+            background: #d9b38c;
+            color: white;
+            border-radius: 20px;
+            padding: 0 10px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Comic Sans MS', cursive;
+            min-width: 110px;
+        }
+        .chessboard-cell {
+            width: 90px;
+            height: 100px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            border: 4px solid;
+            background: #fef7ea;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+        }
+        .chessboard-cell.red {
+            background: #ffe0e0;
+            border-color: #e34234;
+        }
+        .chessboard-cell.blue {
+            background: #d4eaff;
+            border-color: #3b82f6;
+        }
+        .chessboard-cell.yellow {
+            background: #fff0c0;
+            border-color: #f4b836;
+        }
+        .chessboard-cell::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            font-size: 0.65rem;
+            color: #a55a2c;
+            font-weight: normal;
+            text-align: center;
+        }
+        .chessboard-header {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #553c20;
+            padding: 5px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .chessboard-note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #6b4f24;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        /* 第三关棋盘样式 - 内容居中 */
+        .l3-chessboard {
+            background: #f8efdf;
+            border-radius: 24px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .l3-chessboard .area-title {
+            margin-bottom: 20px;
+        }
+        .l3-header-row {
+            display: grid;
+            grid-template-columns: auto 90px 90px 90px;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .l3-header-cell {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #553c20;
+            padding: 5px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .l3-row {
+            display: grid;
+            grid-template-columns: auto 90px 90px 90px;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .l3-label {
+            background: #d9b38c;
+            color: white;
+            border-radius: 20px;
+            padding: 0 10px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Comic Sans MS', cursive;
+            min-width: 110px;
+        }
+        .l3-cell {
+            width: 90px;
+            height: 100px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #666;
+            background: #fef7ea;
+            border: 3px solid #333;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+            transition: 0.1s;
+        }
+        .three-numbers-preview {
+            background: #e7dcc8; border-radius: 40px; padding: 8px 15px; margin: 10px 0 5px;
+            display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px;
+            position: relative;
+        }
+        .three-numbers-preview::before {
+            content: "💖";
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            font-size: 1.2rem;
+        }
+        .preview-number {
+            background: #2f4858; color: #ffdd99; padding: 6px 18px; border-radius: 60px;
+            font-size: 1.5rem; font-weight: bold;
+            transition: 0.2s;
+        }
+        .preview-number:hover {
+            transform: scale(1.05);
+            background: #39586d;
+        }
+        .sum-card { background: linear-gradient(135deg, #4a3927, #5c4937); text-align: center; padding: 12px; border-radius: 48px; margin: 12px 0 15px; position: relative; }
+        .sum-card::before {
+            content: "⭐";
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 1.5rem;
+        }
+        .sum-value { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #ffd966, #ffcc33); padding: 4px 28px; border-radius: 60px; color: #3c2a1f; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .history-area { background: #fdf0df; border-radius: 40px; padding: 12px 15px; margin-top: 20px; border-top: 4px solid #f0bc6e; position: relative; }
+        .history-area::after {
+            content: "🌸";
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 1.5rem;
+        }
+        .history-item {
+            background: white; border-radius: 32px; padding: 8px 16px; font-size: 0.85rem;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.1); border-left: 8px solid #f0a74b;
+            transition: 0.2s;
+        }
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+        }
+        .rule-box {
+            background: linear-gradient(135deg, #fff0c0, #ffe899); border-left: 8px solid #f9b81b;
+            padding: 12px 16px; border-radius: 20px;
+            font-weight: bold; color: #a05a2c; margin: 10px 0;
+            text-align: center;
+            position: relative;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .rule-box::before {
+            content: "💡";
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+        .calc-history {
+            background: #fff;
+            border-radius: 20px;
+            padding: 10px;
+            margin-top:10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 2px solid #f0bc6e;
+        }
+        .calc-item {
+            padding: 4px 0;
+            font-size: 1rem;
+            border-bottom: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .calc-item::before {
+            content: "✨";
+            font-size: 1rem;
+        }
+        .heart-progress {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .heart {
+            font-size: 1.8rem;
+            color: #ddd;
+            transition: 0.3s;
+        }
+        .heart.active {
+            color: #e74c3c;
+        }
+
+        /* 临时消息浮层 */
+        .temp-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: #ffebc2;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 60px;
+            z-index: 1000;
+            text-align: center;
+            white-space: nowrap;
+            font-family: 'Comic Sans MS', cursive;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+            border: 2px solid #ffb347;
+            display: none;
+        }
+        .level-clear {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 30px 50px;
+            border-radius: 30px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff4757;
+            text-shadow: 0 0 10px #ffb8bc;
+            z-index: 999;
+            display: none;
+            font-family: 'Comic Sans MS', cursive;
+            white-space: nowrap;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .rule-desc {
+            background: #fef7e8;
+            border-left: 4px solid #e8894a;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            font-size: 0.95rem;
+            color: #664a25;
+            line-height: 1.5;
+            font-family: 'Comic Sans MS', cursive;
+        }
+    </style>
+</head>
+<body>
+<div class="lab-container">
+    <div class="decor decor-star">⭐</div>
+    <div class="decor decor-heart">❤️</div>
+    <div class="decor decor-flower">🌸</div>
+    <div class="level-clear" id="levelClear">恭喜你小朋友，已通过第一关！</div>
+    <div class="temp-message" id="tempMsg"></div>
+
+    <!-- 封面 -->
+    <div id="pageCover" class="cover">
+        <h1 class="cover-title">🎮 玩转数字卡片 🎮</h1>
+        <div class="cover-subtitle">二年级数学趣味小游戏</div>
+        <div class="level-buttons">
+            <button class="level-btn">🌟 第一关 🌟</button>
+            <button class="level-btn">💙 第二关 💙</button>
+            <button class="level-btn">💛 第三关 💛</button>
+        </div>
+        <div style="margin-top: 30px; font-size: 1.1rem; color: #c05e3a; font-family: 'Comic Sans MS', cursive;">
+            🎈 拖动卡片，玩转数字魔法吧！ 🎈
+        </div>
+    </div>
+
+    <!-- 第一关 -->
+    <div id="pageLevel1" style="display:none;">
+        <button class="back-btn" onclick="showCover()">← 返回封面</button>
+        <h1 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Comic Sans MS', cursive;">
+            <span>⭐</span>第一关：排列三位数<span>⭐</span>
+        </h1>
+        <div class="rule-desc">游戏要求：先从9张数字卡片中选3张数字卡片放在抽取区，再将抽取区的卡片放在摆数区，组成第一个三位数，接着重置继续摆数。</div>
+        <div class="area-wrap"><div class="area-title">卡片库</div><div class="card-row" id="cardPool"></div></div>
+        <div class="area-wrap"><div class="area-title">抽取区（请抽取3张卡片）</div><div class="card-row"><div class="slot" data-type="pick" data-index="0"></div><div class="slot" data-type="pick" data-index="1"></div><div class="slot" data-type="pick" data-index="2"></div></div></div>
+        <div class="area-wrap"><div class="area-title">摆数区（拖动卡片组成三位数）</div><div class="card-row"><div class="slot" data-type="num" data-index="0"></div><div class="slot" data-type="num" data-index="1"></div><div class="slot" data-type="num" data-index="2"></div></div><div style="text-align:center;margin-top:10px;font-size:1.1rem;">🎯 当前数字：<span id="nowNum">---</span></div></div>
+        <div class="btn-group"><button onclick="resetNumArea()">🔄 重置摆数区</button><button onclick="fullReset()">🆘 全部重置</button></div>
+        <div class="area-wrap"><div class="area-title">记录区</div><div class="heart-progress" id="heartProgress"><div class="heart">🤍</div><div class="heart">🤍</div><div class="heart">🤍</div><div class="heart">🤍</div><div class="heart">🤍</div><div class="heart">🤍</div></div><div class="record-list" id="recordArea"></div></div>
+        <div class="tip-text" id="finishTip" style="display:none;">🎉 恭喜你，已摆出全部三位数！ 🎉</div>
+        <div class="secret-area"><div class="area-title">秘诀区</div><div class="secret-text">💡 为了做到不遗漏、不重复，在摆放时要按照一定顺序摆放，固定百位，交换个位和十位。</div></div>
+        <div style="text-align:center; margin-top:20px;"><button class="next-btn" onclick="showLevel(2)">➡️ 进入第二关</button></div>
+    </div>
+
+    <!-- 第二关 -->
+    <div id="pageLevel2" style="display:none;">
+        <button class="back-btn" onclick="showCover()">← 返回封面</button>
+        <h1 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 10px;"><span>💙</span>第二关：三位数数棋盘<span>💙</span></h1>
+        <div class="rule-desc">游戏要求：先点击数字卡片库随机上色按钮，会将9张卡片分成3种颜色，红色卡片只能放在数字棋盘区的百位；蓝色卡片只能放在十位，黄色卡片只能放在个位；放好后点击计算总和记录按钮，再重新组成三位数放置卡片到对应区域，继续点击计算总和记录按钮，最后请你看看算式与总和，想想你的发现，想好后可进入第三关。</div>
+        <div class="area-wrap"><div class="area-title">数字卡片库</div><div style="text-align:center; margin:10px 0;"><button onclick="l2RandomColor()" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);">🎨 随机分组上色（红/蓝/黄各3张）</button></div><div class="card-row" id="l2CardsContainer"></div></div>
+        <div class="chessboard-container"><div class="area-title">三位数棋盘</div><div class="chessboard-grid"><div></div><div class="chessboard-header">百位</div><div class="chessboard-header">十位</div><div class="chessboard-header">个位</div><div class="chessboard-label">第一个三位数</div><div class="chessboard-cell red" data-row="0" data-col="0" data-label="红(百位)">?</div><div class="chessboard-cell blue" data-row="0" data-col="1" data-label="蓝(十位)">?</div><div class="chessboard-cell yellow" data-row="0" data-col="2" data-label="黄(个位)">?</div><div class="chessboard-label">第二个三位数</div><div class="chessboard-cell red" data-row="1" data-col="0" data-label="红(百位)">?</div><div class="chessboard-cell blue" data-row="1" data-col="1" data-label="蓝(十位)">?</div><div class="chessboard-cell yellow" data-row="1" data-col="2" data-label="黄(个位)">?</div><div class="chessboard-label">第三个三位数</div><div class="chessboard-cell red" data-row="2" data-col="0" data-label="红(百位)">?</div><div class="chessboard-cell blue" data-row="2" data-col="1" data-label="蓝(十位)">?</div><div class="chessboard-cell yellow" data-row="2" data-col="2" data-label="黄(个位)">?</div></div><div class="chessboard-note">📝 每一行从左到右：<span>红色边框（百位）</span> → <span>蓝色边框（十位）</span> → <span>黄色边框（个位）</span> 组成一个三位数。<br>第一行 = 第1个数，第二行 = 第2个数，第三行 = 第3个数，三个数相加得到总和。</div></div>
+        <div class="three-numbers-preview" id="l2ThreePreview"><span class="preview-number">❤️ 第一数: ---</span><span class="preview-number">💙 第二数: ---</span><span class="preview-number">💛 第三数: ---</span></div>
+        <div class="btn-group"><button id="l2SumBtn">🧮 计算总和 & 记录</button><button id="l2ResetBtn">🗑️ 清空重摆</button><button id="l2ClearHistory">📝 清空记录</button></div>
+        <div class="sum-card"><span style="color:#ffe3b3;">🌟 当前总和</span><br><span class="sum-value" id="l2SumDisplay">0</span></div>
+        <div class="history-area"><div class="area-title">成功拼法记录</div><div id="l2HistoryList"></div></div>
+        <div class="tip-text" id="l2FinalTip" style="display:none;">🧐 小朋友，有没有发现怎么排列总和都没有变呢？<br>💡 原因：百位、十位、个位上的数字总和一直一样，只是换了位置，所以总和不变！</div>
+        <div class="secret-area"><div class="area-title">秘诀区</div><div class="secret-text">💡 当我们固定百位三张卡片时，有多少个百是固定的，不管怎么交换卡片位置，都是这么多个百，十位和个位也是这样的。</div></div>
+        <div style="text-align:center; margin-top:20px;"><button class="next-btn" onclick="showLevel(3)">➡️ 进入第三关</button></div>
+    </div>
+
+    <!-- 第三关 -->
+    <div id="pageLevel3" style="display:none;">
+        <button class="back-btn" onclick="showCover()">← 返回封面</button>
+        <h1 style="text-align:center; display: flex; align-items: center; justify-content: center; gap: 10px;"><span>💛</span>第三关：求和最大 / 最小<span>💛</span></h1>
+        <div class="rule-desc">游戏要求：用9张数字卡片组成3个三位数，要求和最大，再重置组成三个三位数，要求和最小，看看你能组出几个和最大（最小）的情况。</div>
+        <div class="area-wrap"><div class="area-title">卡片库</div><div class="card-row" id="l3Cards"></div></div>
+        <div class="l3-chessboard"><div class="area-title">三位数棋盘</div><div class="l3-header-row"><div></div><div class="l3-header-cell">百位</div><div class="l3-header-cell">十位</div><div class="l3-header-cell">个位</div></div><div class="l3-row"><div class="l3-label">第一个三位数</div><div class="l3-cell" data-row="0" data-col="0">?</div><div class="l3-cell" data-row="0" data-col="1">?</div><div class="l3-cell" data-row="0" data-col="2">?</div></div><div class="l3-row"><div class="l3-label">第二个三位数</div><div class="l3-cell" data-row="1" data-col="0">?</div><div class="l3-cell" data-row="1" data-col="1">?</div><div class="l3-cell" data-row="1" data-col="2">?</div></div><div class="l3-row"><div class="l3-label">第三个三位数</div><div class="l3-cell" data-row="2" data-col="0">?</div><div class="l3-cell" data-row="2" data-col="1">?</div><div class="l3-cell" data-row="2" data-col="2">?</div></div></div>
+        <div class="three-numbers-preview" id="l3Preview"><span class="preview-number">🎯 数1：---</span><span class="preview-number">🎯 数2：---</span><span class="preview-number">🎯 数3：---</span></div>
+        <div class="btn-group"><button onclick="l3Calc()">🧮 计算当前总和</button><button onclick="l3Reset()">🗑️ 清空重摆</button><button onclick="l3AutoMax()">🏆 自动最大和</button><button onclick="l3AutoMin()">🥈 自动最小和</button></div>
+        <div class="sum-card"><span style="color:#ffe3b3;">🌟 当前总和</span><br><span class="sum-value" id="l3Sum">0</span></div>
+        <div class="calc-history" id="l3CalcHistory"><div style="text-align:center; font-weight: bold; color: #c05e3a;">📝 算式记录</div></div>
+        <div class="rule-box" id="l3Rule" style="display:none;">📚 规律：总和最大 → 大数放百位；总和最小 → 小数放百位</div>
+        <div class="secret-area"><div class="area-title">秘诀区</div><div class="secret-text">💡 和最大将大数放百位，和最小将小数放百位。</div></div>
+        <div style="text-align:center; margin-top:20px;"><button class="next-btn" onclick="showCover()">🏠 返回封面</button></div>
+    </div>
+</div>
+
+<script>
+    // 页面切换
+    function showCover() {
+        document.getElementById('levelClear').style.display = 'none';
+        document.querySelectorAll('[id^="page"]').forEach(el => el.style.display = 'none');
+        document.getElementById('pageCover').style.display = 'block';
+    }
+    function showLevel(n) {
+        document.getElementById('levelClear').style.display = 'none';
+        document.querySelectorAll('[id^="page"]').forEach(el => el.style.display = 'none');
+        document.getElementById('pageLevel'+n).style.display = 'block';
+        if(n===1) initLevel1();
+        if(n===2) initLevel2();
+        if(n===3) initLevel3();
+    }
+    document.querySelectorAll('.level-btn')[0].onclick = () => showLevel(1);
+    document.querySelectorAll('.level-btn')[1].onclick = () => showLevel(2);
+    document.querySelectorAll('.level-btn')[2].onclick = () => showLevel(3);
+
+    // ========== 通用临时消息 ==========
+    function showTempMessage(msg, duration=3000) {
+        const msgDiv = document.getElementById('tempMsg');
+        msgDiv.innerText = msg;
+        msgDiv.style.display = 'block';
+        setTimeout(() => {
+            msgDiv.style.display = 'none';
+        }, duration);
+    }
+
+    // ========== 第一关逻辑 (保持不变) ==========
+    let poolData = [1,2,3,4,5,6,7,8,9];
+    let pickArea = [null,null,null];
+    let numArea = [null,null,null];
+    let recordSet = new Set();
+    function initLevel1(){ pickArea = [null,null,null]; numArea = [null,null,null]; recordSet.clear(); document.getElementById('finishTip').style.display = 'none'; document.getElementById('recordArea').innerHTML = ''; document.getElementById('nowNum').innerText = '---'; document.getElementById('levelClear').style.display = 'none'; let hearts = document.querySelectorAll('#heartProgress .heart'); hearts.forEach(h => h.classList.remove('active')); hearts.forEach(h => h.innerText = '🤍'); renderAllSlot(); }
+    function renderAllSlot(){ const poolDom = document.getElementById('cardPool'); poolDom.innerHTML = ''; poolData.forEach(num=>{ let card = document.createElement('div'); card.className = 'drag-card card-black-border'; card.draggable = true; card.innerHTML = `<div class="card-number">${num}</div>`; card.dataset.num = num; card.addEventListener('dragstart',e=>{ e.dataTransfer.setData('source','pool'); e.dataTransfer.setData('num',num); }); poolDom.appendChild(card); }); document.querySelectorAll('.slot').forEach(slot=>{ slot.innerHTML = ''; let type = slot.dataset.type; let idx = parseInt(slot.dataset.index); let val = type === 'pick' ? pickArea[idx] : numArea[idx]; if(val !== null){ let card = document.createElement('div'); card.className = 'drag-card card-black-border'; card.draggable = true; card.innerHTML = `<div class="card-number">${val}</div>`; card.dataset.num = val; card.addEventListener('dragstart',e=>{ e.dataTransfer.setData('source',type); e.dataTransfer.setData('num',val); e.dataTransfer.setData('slotIdx',idx); }); slot.appendChild(card); } slot.addEventListener('dragover',e=>e.preventDefault()); slot.addEventListener('drop',e=>{ e.preventDefault(); let source = e.dataTransfer.getData('source'); let num = parseInt(e.dataTransfer.getData('num')); let sIdx = parseInt(e.dataTransfer.getData('slotIdx')||'-1'); let tarType = slot.dataset.type; let tarIdx = parseInt(slot.dataset.index); if((tarType==='pick' && pickArea[tarIdx]!==null) || (tarType==='num' && numArea[tarIdx]!==null)) return; if(source === 'pool' && tarType === 'pick'){ pickArea[tarIdx] = num; renderAllSlot(); return; } if(source === 'pick' && tarType === 'num'){ pickArea[sIdx] = null; numArea[tarIdx] = num; renderAllSlot(); checkNumComplete(); return; } if(source === 'num' && tarType === 'num'){ [numArea[sIdx], numArea[tarIdx]] = [numArea[tarIdx], numArea[sIdx]]; renderAllSlot(); checkNumComplete(); return; } if(source === 'pick' && tarType === 'pick'){ [pickArea[sIdx], pickArea[tarIdx]] = [pickArea[tarIdx], pickArea[sIdx]]; renderAllSlot(); } }); }); }
+    function checkNumComplete(){ if(numArea.includes(null)){ document.getElementById('nowNum').innerText = '---'; return; } let current = numArea[0]*100 + numArea[1]*10 + numArea[2]; document.getElementById('nowNum').innerText = current; if(!recordSet.has(current)){ recordSet.add(current); updateRecord(); updateHearts(); if(recordSet.size >= 6){ document.getElementById('finishTip').style.display = 'block'; document.getElementById('levelClear').style.display = 'block'; } } }
+    function updateHearts(){ let cnt = recordSet.size; let hearts = document.querySelectorAll('#heartProgress .heart'); for(let i=0;i<hearts.length;i++){ if(i < cnt){ hearts[i].classList.add('active'); hearts[i].innerText = '❤️'; } else { hearts[i].classList.remove('active'); hearts[i].innerText = '🤍'; } } }
+    function updateRecord(){ let listDom = document.getElementById('recordArea'); listDom.innerHTML = ''; let arr = Array.from(recordSet); arr.forEach((n,i)=>{ let item = document.createElement('div'); item.className = 'record-item'; item.innerText = `第${i+1}个：${n} ✨`; listDom.appendChild(item); }); }
+    function resetNumArea(){ for(let i=0;i<3;i++){ if(numArea[i] !== null){ let empty = pickArea.findIndex(v=>v===null); if(empty !== -1) pickArea[empty] = numArea[i]; numArea[i] = null; } } document.getElementById('nowNum').innerText = '---'; renderAllSlot(); }
+    function fullReset(){ initLevel1(); }
+
+    // ========== 第二关逻辑 ==========
+    let l2Board = [[null,null,null],[null,null,null],[null,null,null]];
+    let l2Cards = [], l2History = [], l2Color = [], l2MaxCount = 0;
+    function initLevel2(){ l2Cards = [1,9,3,2,7,5,4,6,8].map(n=>({n,c:'none'})); l2Board = [[null,null,null],[null,null,null],[null,null,null]]; l2History = []; l2Color = []; l2MaxCount = 0; document.getElementById('l2FinalTip').style.display='none'; l2Render(); document.querySelectorAll('.chessboard-cell').forEach(cell => { cell.addEventListener('dragover', e => e.preventDefault()); cell.addEventListener('drop', function(e) { e.preventDefault(); const n = parseInt(e.dataTransfer.getData('cn')); const co = e.dataTransfer.getData('cc'); const row = parseInt(this.dataset.row); const col = parseInt(this.dataset.col); const allowColor = this.classList.contains('red') ? 'red' : this.classList.contains('blue') ? 'blue' : 'yellow'; if(co!==allowColor){ alert("请放入对应颜色区域！"); return; } if(l2Board[row][col]) return; l2Board[row][col] = n; const idx = l2Cards.findIndex(x=>x.n===n&&x.c===co); if(idx!==-1) l2Cards.splice(idx,1); l2Render(); }); }); }
+    function l2RandomColor(){ let arr=[1,9,3,2,7,5,4,6,8]; for(let i=arr.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } l2Color=[]; for(let i=0;i<3;i++)l2Color.push({n:arr[i],c:'red'}); for(let i=3;i<6;i++)l2Color.push({n:arr[i],c:'blue'}); for(let i=6;i<9;i++)l2Color.push({n:arr[i],c:'yellow'}); l2Cards=JSON.parse(JSON.stringify(l2Color)); l2Board=[[null,null,null],[null,null,null],[null,null,null]]; l2History=[]; l2MaxCount=0; document.getElementById('l2FinalTip').style.display='none'; l2Render(); }
+    function l2Render(){ const cont=document.getElementById('l2CardsContainer'); cont.innerHTML=''; l2Cards.forEach(card=>{ const d=document.createElement('div'); d.className='drag-card'; d.style.background = card.c==='red'?'linear-gradient(145deg,#ffe0e0,#ffc0c0)': card.c==='blue'?'linear-gradient(145deg,#d4eaff,#b0d4ff)': card.c==='yellow'?'linear-gradient(145deg,#fff0c0,#ffe4a3)':'#f0f0f0'; d.style.border = card.c==='red'?'3px solid #e34234': card.c==='blue'?'3px solid #3b82f6': card.c==='yellow'?'3px solid #f4b836':'3px solid #ccc'; d.draggable=true; d.innerHTML=`<div class="card-number">${card.n}</div>`; d.addEventListener('dragstart',e=>{ if(card.c==='none'){alert("请先随机上色！");return;} e.dataTransfer.setData('cn',card.n); e.dataTransfer.setData('cc',card.c); }); cont.appendChild(d); }); document.querySelectorAll('.chessboard-cell').forEach(cell => { const row = parseInt(cell.dataset.row); const col = parseInt(cell.dataset.col); cell.textContent = l2Board[row][col] ?? '?'; }); let full=true,sum=0,nums=[]; l2Board.flat().forEach(x=>{if(x===null)full=false;}); if(full){ nums=l2Board.map(r=>r[0]*100+r[1]*10+r[2]); sum=nums.reduce((a,b)=>a+b,0); } document.getElementById('l2SumDisplay').innerText=sum; const pv=document.querySelectorAll('#l2ThreePreview .preview-number'); if(full){ pv[0].innerText="❤️ 第一数:"+nums[0]; pv[1].innerText="💙 第二数:"+nums[1]; pv[2].innerText="💛 第三数:"+nums[2]; } else { pv.forEach(x=>x.innerText=x.innerText.split(':')[0]+":---"); } const list=document.getElementById('l2HistoryList'); list.innerHTML=''; l2History.forEach(h=>{ const it=document.createElement('div'); it.className='history-item'; it.innerHTML=`<span>${h.text} ✨</span><span>总和：${h.sum} 🌟</span>`; list.appendChild(it); }); }
+    document.getElementById('l2SumBtn').onclick=()=>{ let full=true; l2Board.flat().forEach(x=>{if(x===null)full=false;}); if(!full){ alert("请先填满棋盘！"); return; } let nums=l2Board.map(r=>r[0]*100+r[1]*10+r[2]); let sum=nums.reduce((a,b)=>a+b,0); let str=`${nums[0]} + ${nums[1]} + ${nums[2]}`; l2History.unshift({text:str,sum:sum}); l2MaxCount++; if(l2MaxCount>=5) document.getElementById('l2FinalTip').style.display='block'; l2Cards=JSON.parse(JSON.stringify(l2Color)); l2Board=[[null,null,null],[null,null,null],[null,null,null]]; l2Render(); };
+    document.getElementById('l2ResetBtn').onclick=()=>{ l2Board=[[null,null,null],[null,null,null],[null,null,null]]; l2Cards=JSON.parse(JSON.stringify(l2Color)); l2Render(); };
+    document.getElementById('l2ClearHistory').onclick=()=>{ l2History=[]; l2Render(); };
+
+    // ========== 第三关逻辑 (清空重摆时彻底清空预览) ==========
+    let l3B=[[null,null,null],[null,null,null],[null,null,null]], l3P=[];
+    const l3All=[1,9,3,2,7,5,4,6,8];
+    let l3Rec=[];
+
+    function permute(arr) {
+        if (arr.length <= 1) return [arr];
+        let result = [];
+        for (let i = 0; i < arr.length; i++) {
+            let current = arr[i];
+            let remaining = arr.slice(0,i).concat(arr.slice(i+1));
+            let perms = permute(remaining);
+            for (let perm of perms) {
+                result.push([current, ...perm]);
+            }
+        }
+        return result;
+    }
+
+    function generateAllMaxEquations() {
+        const hundreds = [9,8,7];
+        const tens = [6,5,4];
+        const units = [3,2,1];
+        const permsH = permute(hundreds);
+        const permsT = permute(tens);
+        const permsU = permute(units);
+        let equations = [];
+        for (let ph of permsH) {
+            for (let pt of permsT) {
+                for (let pu of permsU) {
+                    let num1 = ph[0]*100 + pt[0]*10 + pu[0];
+                    let num2 = ph[1]*100 + pt[1]*10 + pu[1];
+                    let num3 = ph[2]*100 + pt[2]*10 + pu[2];
+                    equations.push(`${num1} + ${num2} + ${num3} = 2556`);
+                }
+            }
+        }
+        return equations;
+    }
+
+    function generateAllMinEquations() {
+        const hundreds = [1,2,3];
+        const tens = [4,5,6];
+        const units = [7,8,9];
+        const permsH = permute(hundreds);
+        const permsT = permute(tens);
+        const permsU = permute(units);
+        let equations = [];
+        for (let ph of permsH) {
+            for (let pt of permsT) {
+                for (let pu of permsU) {
+                    let num1 = ph[0]*100 + pt[0]*10 + pu[0];
+                    let num2 = ph[1]*100 + pt[1]*10 + pu[1];
+                    let num3 = ph[2]*100 + pt[2]*10 + pu[2];
+                    equations.push(`${num1} + ${num2} + ${num3} = 774`);
+                }
+            }
+        }
+        return equations;
+    }
+
+    function initLevel3(){ 
+        l3B = [[null,null,null],[null,null,null],[null,null,null]]; 
+        l3P = [...l3All]; 
+        l3Rec = []; 
+        renderL3(); 
+        document.querySelectorAll('.l3-cell').forEach(cell => { 
+            cell.removeEventListener('dragover', l3DragOver);
+            cell.removeEventListener('drop', l3Drop);
+            cell.addEventListener('dragover', l3DragOver);
+            cell.addEventListener('drop', l3Drop);
+        });
+    }
+    function l3DragOver(e) { e.preventDefault(); }
+    function l3Drop(e) {
+        e.preventDefault();
+        const v = parseInt(e.dataTransfer.getData('v'));
+        const row = parseInt(this.dataset.row);
+        const col = parseInt(this.dataset.col);
+        if(l3B[row][col]) return;
+        const i = l3P.indexOf(v);
+        if(i !== -1) l3P.splice(i,1);
+        l3B[row][col] = v;
+        renderL3();
+    }
+
+    function renderL3() {
+        const cont = document.getElementById('l3Cards');
+        cont.innerHTML = '';
+        l3P.forEach(n => {
+            const d = document.createElement('div');
+            d.className = 'drag-card card-black-border';
+            d.draggable = true;
+            d.innerHTML = `<div class="card-number">${n}</div>`;
+            d.addEventListener('dragstart', e => { e.dataTransfer.setData('v', n); });
+            cont.appendChild(d);
+        });
+        document.querySelectorAll('.l3-cell').forEach(cell => {
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            cell.textContent = l3B[row][col] ?? '?';
+            cell.style.background = l3B[row][col] !== null ? '#ffffff' : '#fef7ea';
+        });
+        let full = true, sum = 0, nums = [];
+        l3B.flat().forEach(x => { if(x === null) full = false; });
+        if(full) {
+            nums = l3B.map(r => r[0]*100 + r[1]*10 + r[2]);
+            sum = nums.reduce((a,b) => a+b, 0);
+        }
+        document.getElementById('l3Sum').innerText = sum;
+        const pv = document.querySelectorAll('#l3Preview .preview-number');
+        if(full) {
+            pv[0].innerText = "🎯 数1:" + nums[0];
+            pv[1].innerText = "🎯 数2:" + nums[1];
+            pv[2].innerText = "🎯 数3:" + nums[2];
+        } else {
+            // 清空预览显示“---”
+            pv.forEach(x => x.innerText = x.innerText.split('：')[0] + "：---");
+        }
+        const h = document.getElementById('l3CalcHistory');
+        h.innerHTML = '';
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.fontWeight = 'bold';
+        header.style.color = '#c05e3a';
+        header.style.fontFamily = 'Comic Sans MS, cursive';
+        header.innerText = '📝 算式记录';
+        h.appendChild(header);
+        l3Rec.forEach(item => {
+            const d = document.createElement('div');
+            d.className = 'calc-item';
+            d.innerText = item;
+            h.appendChild(d);
+        });
+        document.getElementById('l3Rule').style.display = full ? 'block' : 'none';
+    }
+
+    function l3Calc() {
+        renderL3(); 
+        let full = true; 
+        l3B.flat().forEach(x => { if(x === null) full = false; });
+        if(!full) return;
+        let nums = l3B.map(r => r[0]*100 + r[1]*10 + r[2]);
+        let sum = nums.reduce((a,b) => a+b, 0);
+        let expr = `${nums[0]} + ${nums[1]} + ${nums[2]} = ${sum}`;
+        l3Rec.push(expr);
+        renderL3();
+
+        // 根据总和显示不同提示
+        if(sum === 2556) {
+            showTempMessage("🎉 恭喜你，找到了和最大的一种情况 🎉", 3000);
+        } else if(sum === 774) {
+            showTempMessage("🎉 恭喜你，找到了和最小的一种情况 🎉", 3000);
+        } else {
+            showTempMessage("😔 很遗憾，再想想哦！", 3000);
+        }
+    }
+    
+    function l3Reset() { 
+        initLevel3(); 
+        // 确保预览区被清空 (initLevel3中已调用renderL3，会处理)
+    }
+    
+    function l3AutoMax() {
+        let allMax = generateAllMaxEquations();
+        l3Rec = [...allMax];
+        l3B = [[9,6,3], [8,5,2], [7,4,1]];
+        l3P = [];
+        renderL3();
+        showTempMessage(`✨ 已列出所有和最大算式 (共${allMax.length}个) ✨`, 3000);
+    }
+    
+    function l3AutoMin() {
+        let allMin = generateAllMinEquations();
+        l3Rec = [...allMin];
+        l3B = [[1,4,7], [2,5,8], [3,6,9]];
+        l3P = [];
+        renderL3();
+        showTempMessage(`✨ 已列出所有和最小算式 (共${allMin.length}个) ✨`, 3000);
+    }
+    
+    showCover();
+</script>
+</body>
+</html>
